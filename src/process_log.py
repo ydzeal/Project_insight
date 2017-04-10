@@ -26,7 +26,7 @@ def feature1(df, n):
     active_hosts = df['Host'].value_counts()[:n] 
     
     # output with hosts.txt
-    with open('./log_output/hosts.txt', 'w', encoding='utf-8') as lines:
+    with open('./log_output/hosts.txt', 'w') as lines:
         for index, count in active_hosts.iteritems(): 
             lines.write('%s,%s\n' % (index, count))
             
@@ -39,7 +39,7 @@ def feature2(df, n):
                     sort_values(by='Bytes', ascending=False).head(n)
     
     # output with resources.txt
-    with open('./log_output/resources.txt', 'w', encoding='utf-8') as lines:
+    with open('./log_output/resources.txt', 'w') as lines:
         for request, _ in most_resource.iterrows():
             url = request.split(' ')[1] if ' ' in request else request
             lines.write('%s\n' % url)
@@ -93,7 +93,7 @@ def feature3(fileName):
     countList.sort(key=operator.itemgetter(1), reverse=True)
     
     # output the hours.txt
-    with open('./log_output/hours.txt', 'w', encoding='utf-8') as lines:
+    with open('./log_output/hours.txt', 'w') as lines:
         for i in range(0, min(10, len(countList))):
             std_time = ds.timestamp_to_datetime(countList[i][0])
             timeStr = ds.time2str(std_time.day, std_time.month, std_time.year, std_time.hour, std_time.minute, std_time.second)
@@ -158,7 +158,7 @@ def feature4(df):
                 row['HttpCode'], row['Bytes']))
                 
     # output the blocked.txt
-	with open('./log_output/blocked.txt', 'w',encoding='utf-8') as lines:
+	with open('./log_output/blocked.txt', 'w') as lines:
 		for line in blocked_results:
 			lines.writelines(line)
 
@@ -172,7 +172,7 @@ def feature5(df, n):
                     sort_values(by='Bytes', ascending=False).head(n)
     
     # output with resources_host.txt
-    with open('./log_output/resources_host.txt', 'w', encoding='utf-8') as lines:
+    with open('./log_output/resources_host.txt', 'w') as lines:
         for request, _ in most_resource.iterrows():
             url = request.split(' ')[1] if ' ' in request else request
             lines.write('%s\n' % url)            

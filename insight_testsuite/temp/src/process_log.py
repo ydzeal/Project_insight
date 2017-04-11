@@ -10,9 +10,9 @@ import datetime
 import operator
 
 
-def read_log(file_path):
+def read_log(fileName):
     # read log.txt as a dataframe
-    df = pd.read_csv(file_path, encoding='utf-8', sep =' ', \
+    df = pd.read_csv(fileName, encoding='utf-8', sep =' ', \
             quoting=csv.QUOTE_NONE, error_bad_lines=False, \
             header=None, usecols=[0, 3, 4, 5, 6, 7, 8, 9]) 
             
@@ -21,26 +21,26 @@ def read_log(file_path):
                     'Request', 'Version', 'HttpCode', 'Bytes']
     return df
     
-def feature1(df, n=10):
+def feature1(df, n):
     # count the most active hosts
     active_hosts = df['Host'].value_counts()[:n] 
     
     # output with hosts.txt
-    with open('./log_output/hosts.txt', 'w', encoding='utf-8') as lines:
+    with open('./log_output/hosts.txt', 'w') as lines:
         for index, count in active_hosts.iteritems(): 
             lines.write('%s,%s\n' % (index, count))
             
-def feature2(df, n=10):
+def feature2(df, n):
     # str to int, replace '-' with '0' 
     df['Bytes'] = pd.to_numeric(df['Bytes'], errors='coerce', downcast='integer').fillna(0)
 
 	#group by the request, return the top 10 resources 
-    most_bandwidth = df[['Request', 'Bytes']].groupby('Request').sum().\
+    most_resource = df[['Request', 'Bytes']].groupby('Request').sum().\
                     sort_values(by='Bytes', ascending=False).head(n)
     
     # output with resources.txt
-    with open('./log_output/resources.txt', 'w', encoding='utf-8') as lines:
-        for request, _ in most_bandwidth.iterrows():
+    with open('./log_output/resources.txt', 'w') as lines:
+        for request, _ in most_resource.iterrows():
             url = request.split(' ')[1] if ' ' in request else request
             lines.write('%s\n' % url)
             
@@ -93,7 +93,7 @@ def feature3(fileName):
     countList.sort(key=operator.itemgetter(1), reverse=True)
     
     # output the hours.txt
-    with open('./log_output/hours.txt', 'w', encoding='utf-8') as lines:
+    with open('./log_output/hours.txt', 'w') as lines:
         for i in range(0, min(10, len(countList))):
             std_time = ds.timestamp_to_datetime(countList[i][0])
             timeStr = ds.time2str(std_time.day, std_time.month, std_time.year, std_time.hour, std_time.minute, std_time.second)
@@ -158,18 +158,35 @@ def feature4(df):
                 row['HttpCode'], row['Bytes']))
                 
     # output the blocked.txt
-	with open('./log_output/blocked.txt', 'w',encoding='utf-8') as lines:
+	with open('./log_output/blocked.txt', 'w') as lines:
 		for line in blocked_results:
 			lines.writelines(line)
+
+# feature 5 identify the 10 hosts which use resources the most.
+def feature5(df, n):
+    # str to int, replace '-' with '0' 
+    df['Bytes'] = pd.to_numeric(df['Bytes'], errors='coerce', downcast='integer').fillna(0)
+
+	#group by the Host, return the top 10 resources 
+    most_resource = df[['Host', 'Bytes']].groupby('Host').sum().\
+                    sort_values(by='Bytes', ascending=False).head(n)
+    
+    # output with resources_host.txt
+    with open('./log_output/resources_host.txt', 'w') as lines:
+        for request, _ in most_resource.iterrows():
+            url = request.split(' ')[1] if ' ' in request else request
+            lines.write('%s\n' % url)            
+
             
 def main():
-	fileName = './log_input/log.txt' 
-	df = read_log(fileName)
+    fileName = './log_input/log.txt' 
+    df = read_log(fileName)
     
-	feature1(df, n=10)
-	feature2(df, n=10)
-	feature3(fileName)
-	feature4(df)
+    feature1(df, 10)
+    feature2(df, 10)
+    feature3(fileName)
+    feature4(df)
+    feature5(df, 10)
 
 if __name__ == "__main__":
     main()

@@ -143,12 +143,20 @@ def feature4(df):
                 
 		else: 
             # already blocked but log in successfully after 5 min, then unblock
+<<<<<<< HEAD
 			if blocked_start is not None and (time_stamp - blocked_start).total_seconds() > 300: 
                 blocked_starts.pop(host)
 				blocked_hosts.pop(host)
                 
             # if the failure attempt of a host larger than 3 times, blocked
 			if blocked_hosts.get(host, 0) >= 3:
+=======
+			if blocked_start is not None and (time_stamp - blocked_start).total_seconds() > 300:
+				blocked_starts.pop(host)
+				blocked_hosts.pop(host)
+            
+			if blocked_hosts.get(host, 0) >= 3: 
+>>>>>>> d3c6d9f322fb3ed8fe7a6a6f5c2a0d71ce46a659
 				blocked = True
 
         # add the info into results if get blocked

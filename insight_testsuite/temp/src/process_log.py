@@ -102,65 +102,62 @@ def feature3(fileName):
             
 def feature4(df):
     # format Timestamp so that can apply math operation
-	df['Timestamp'] = pd.to_datetime(df['Timestamp'].str.replace('[', ''), \
+    df['Timestamp'] = pd.to_datetime(df['Timestamp'].str.replace('[', ''), \
                         format='%d/%b/%Y:%H:%M:%S')
       
-	blocked_hosts = {} 
-	blocked_starts = {} 
-	blocked_results = [] 
+    blocked_hosts = {} 
+    blocked_starts = {} 
+    blocked_results = [] 
 
-	for _, row in df.iterrows():
+    for _, row in df.iterrows():
 
-		http_code = row['HttpCode']
-		host = row['Host']
-		time_stamp = row['Timestamp']
+        http_code = row['HttpCode']
+        host = row['Host']
+        time_stamp = row['Timestamp']
         
         # get block start time by host
-		blocked_start = blocked_starts.get(host, None)
-		blocked = False 
+        blocked_start = blocked_starts.get(host, None)
+        blocked = False 
 
-		if pd.to_numeric(http_code, errors='ignore') == 401:
+        if pd.to_numeric(http_code, errors='ignore') == 401:
         
             # if first time failure
-			if blocked_start is None:      
+            if blocked_start is None:      
                 # record failure time stamp
-				blocked_starts[host] = time_stamp 
+                blocked_starts[host] = time_stamp 
                 # count the fail times for the host
-				blocked_hosts[host] = 1 
-			else:
+                blocked_hosts[host] = 1 
+            else:
                 # if not the first time fail to log in, then is interval < 20s ? 
-				time_delta =  (time_stamp - blocked_start).total_seconds()
-				if time_delta <= 20: 
-					blocked_hosts[host] += 1 
-				else:
+                time_delta =  (time_stamp - blocked_start).total_seconds()
+                if time_delta <= 20: 
+                    blocked_hosts[host] += 1 
+                else:
                     # if interval > 20s, treat it as first failure
-					blocked_starts[host] = time_stamp 
-					blocked_hosts[host] = 1
+                    blocked_starts[host] = time_stamp 
+                    blocked_hosts[host] = 1
                     
             # failure times more than 3, block
-			if blocked_hosts.get(host, 0) > 3:
-				blocked = True
+            if blocked_hosts.get(host, 0) > 3:
+                blocked = True
                 
-		else: 
+        else: 
             # already blocked but log in successfully after 5 min, then unblock
-			if blocked_start is not None and (time_stamp - blocked_start).total_seconds() > 300: # if this host has failure login but the interval is larger than 5 min, delete the host from the potential blocked list
-				blocked_starts.pop(host)
-				blocked_hosts.pop(host)
-            #
-			if blocked_hosts.get(host, 0) >= 3: # if the failure attempt of a host larger than 3 times, blocked
-				blocked = True
-
+            if blocked_start is not None and (time_stamp - blocked_start).total_seconds() > 300: 
+                blocked_starts.pop(host)
+                blocked_hosts.pop(host)
+                
         # add the info into results if get blocked
-		if blocked: 
-			blocked_results.append('%s - - [%s %s %s %s %s %s %s\n' % \
+        if blocked: 
+            blocked_results.append('%s - - [%s %s %s %s %s %s %s\n' % \
                 (host, time_stamp.strftime('%d/%b/%Y:%H:%M:%S'), \
                 row['Timezone'], row['Method'], row['Request'], row['Version'],\
                 row['HttpCode'], row['Bytes']))
                 
     # output the blocked.txt
-	with open('./log_output/blocked.txt', 'w') as lines:
-		for line in blocked_results:
-			lines.writelines(line)
+    with open('./log_output/blocked.txt', 'w') as lines:
+        for line in blocked_results:
+            lines.writelines(line)
 
 # feature 5 identify the 10 hosts which use resources the most.
 def feature5(df, n):
